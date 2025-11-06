@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const fallbackBaseUrl = import.meta.env.DEV
   ? '/api'
-  : 'https://nit-backend.vercel.app/api';
+  : 'https://nit-backend-a16m-git-main-save-medha-foundations-projects.vercel.app/api/health';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || fallbackBaseUrl,
