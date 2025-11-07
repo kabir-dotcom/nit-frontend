@@ -1,36 +1,4 @@
-import axios from 'axios';
-
-const fallbackBaseUrl = import.meta.env.DEV
-  ? '/api'
-  : 'https://nit-backend-a16m-git-main-save-medha-foundations-projects.vercel.app/api';
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || fallbackBaseUrl,
-  timeout: 10000,
-});
-
-api.interceptors.request.use(config => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('API error:', error.message);
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.dispatchEvent(new Event('auth-change'));
-    }
-    return Promise.reject(error);
-  }
-);
+import api from '../utils/api';
 
 export const fetchHeroContent = async () => {
   const { data } = await api.get('/content/hero');
