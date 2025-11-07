@@ -2,22 +2,23 @@ import axios from 'axios';
 
 const trimTrailingSlash = url => (typeof url === 'string' ? url.replace(/\/$/, '') : url);
 
-const resolveDevBaseURL = () => {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl) {
-    return trimTrailingSlash(envUrl);
+const resolveBaseURL = () => {
+  const explicit = import.meta.env.VITE_API_URL;
+  if (explicit) {
+    return trimTrailingSlash(explicit);
   }
-  // Use Vite proxy (`/api`) when no explicit URL is provided to dodge CORS in dev.
-  return '/api';
-};
 
-const resolveProdBaseURL = () => {
+  if (import.meta.env.DEV) {
+    // Use Vite proxy (`/api`) when no explicit URL is provided to dodge CORS in dev.
+    return '/api';
+  }
+
   const origin =
     typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
   return `${trimTrailingSlash(origin)}/api`;
 };
 
-const baseURL = import.meta.env.DEV ? resolveDevBaseURL() : resolveProdBaseURL();
+const baseURL = resolveBaseURL();
 
 const api = axios.create({
   baseURL,
