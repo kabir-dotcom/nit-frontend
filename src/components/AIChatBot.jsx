@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
+import { sendChatMessage } from '../utils/api';
 
 const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,17 +41,7 @@ const AIChatBot = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: conversation }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
+      const { data } = await sendChatMessage({ messages: conversation });
       const botReply = data.reply || 'Thanks for your message!';
 
       setMessages(prev =>
