@@ -8,7 +8,14 @@ const AIChatBot = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [requestStatus, setRequestStatus] = useState({
+    phase: "idle",
+    detail: "Ask something to begin.",
+    payload: null,
+  });
   const messagesRef = useRef(null);
+  const pendingRequestRef = useRef(null);
+  const lastPayloadRef = useRef(null);
 
   // Scroll to latest message when chat opens or messages change
   useEffect(() => {
@@ -19,16 +26,48 @@ const AIChatBot = () => {
     }
   }, [messages, isOpen]);
 
-  const toggleChat = () => setIsOpen((prev) => !prev);
+  useEffect(() => () => {
+    if (pendingRequestRef.current) {
+      pendingRequestRef.current.abort("Component unmounted.");
+      pendingRequestRef.current = null;
+    }
+  }, []);
+
+  const toggleChat = () => {
+    if (isOpen && pendingRequestRef.current) {
+      pendingRequestRef.current.abort("Chat closed by user.");
+      pendingRequestRef.current = null;
+      setRequestStatus({
+        phase: "cancelled",
+        detail: "Last request was cancelled when the chat closed.",
+        payload: lastPayloadRef.current ? JSON.stringify(lastPayloadRef.current, null, 2) : null,
+      });
+    }
+    setIsOpen((prev) => !prev);
+  };
+
+  const stringifyPayload = (payload) => {
+    try {
+      return JSON.stringify(payload, null, 2);
+    } catch {
+      return "Payload could not be serialized.";
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isLoading || pendingRequestRef.current) {
+      if (pendingRequestRef.current) {
+        console.warn("Chat request already in flight; skipping new submission.");
+      }
+      return;
+    }
 
     const userMessage = { role: "user", content: trimmed };
     const placeholderId = `assistant-${Date.now()}`;
     const conversation = [...messages, userMessage];
+    const payload = { messages: conversation };
 
     setMessages((prev) => [
       ...prev,
@@ -37,13 +76,24 @@ const AIChatBot = () => {
     ]);
     setInput("");
     setIsLoading(true);
+    lastPayloadRef.current = payload;
+    setRequestStatus({
+      phase: "pending",
+      detail: "Sending your request…",
+      payload: stringifyPayload(payload),
+    });
+    console.info("AIChatBot request pending", payload);
+
+    const controller = new AbortController();
+    pendingRequestRef.current = controller;
 
     try {
       // ✅ Fetch from backend directly
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: conversation }),
+        body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
       const data = await res.json();
@@ -60,23 +110,53 @@ const AIChatBot = () => {
             : message
         )
       );
+      setRequestStatus({
+        phase: "success",
+        detail: "Response received.",
+        payload: null,
+      });
+      console.info("AIChatBot request resolved", { payload, reply: botReply });
     } catch (error) {
-      console.error("Chatbot fetch error:", error);
+      const payloadSnapshot = stringifyPayload(lastPayloadRef.current);
+      const wasAborted = error.name === "AbortError";
+      const fallbackContent = wasAborted
+        ? "That request was cancelled. Ask again whenever you’re ready."
+        : "It seems the server connection was interrupted. But here’s a Natural Immunotherapy tip: strengthen your immunity through detox, hydration, and balanced micronutrients.";
 
-      // ✅ Graceful fallback on network or API failure
       setMessages((prev) =>
         prev.map((message) =>
           message.id === placeholderId
             ? {
                 ...message,
-                content:
-                  "It seems the server connection was interrupted. But here’s a Natural Immunotherapy tip: strengthen your immunity through detox, hydration, and balanced micronutrients.",
+                content: fallbackContent,
               }
             : message
         )
       );
+
+      if (wasAborted) {
+        console.warn("AIChatBot request was aborted intentionally.", {
+          payload: lastPayloadRef.current,
+        });
+      } else {
+        console.error("Chatbot fetch error:", error, {
+          payload: lastPayloadRef.current,
+        });
+        console.info("Replaying failed payload for verification:", lastPayloadRef.current);
+      }
+
+      setRequestStatus({
+        phase: wasAborted ? "cancelled" : "error",
+        detail: wasAborted
+          ? "Request cancelled."
+          : "Request failed. Payload snapshot is shown below.",
+        payload: wasAborted ? payloadSnapshot : payloadSnapshot,
+      });
     } finally {
       setIsLoading(false);
+      if (pendingRequestRef.current === controller) {
+        pendingRequestRef.current = null;
+      }
     }
   };
 
@@ -106,6 +186,30 @@ const AIChatBot = () => {
               <X className="h-4 w-4" />
             </button>
           </header>
+
+          {/* Request State */}
+          <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-2 text-xs">
+            <p
+              className={`font-medium ${
+                requestStatus.phase === "pending"
+                  ? "text-amber-600"
+                  : requestStatus.phase === "success"
+                  ? "text-emerald-700"
+                  : requestStatus.phase === "error"
+                  ? "text-red-600"
+                  : requestStatus.phase === "cancelled"
+                  ? "text-slate-500"
+                  : "text-slate-600"
+              }`}
+            >
+              {requestStatus.detail}
+            </p>
+            {requestStatus.phase === "error" && requestStatus.payload && (
+              <pre className="mt-1 max-h-24 overflow-auto rounded bg-white/80 p-2 text-[10px] text-slate-700">
+                {requestStatus.payload}
+              </pre>
+            )}
+          </div>
 
           {/* Messages Area */}
           <div
