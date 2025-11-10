@@ -19,10 +19,10 @@ const contactDetails = [
 ];
 
 const socialEntries = [
-  { label: 'Facebook', href: '#', Icon: FaFacebookF },
-  { label: 'Instagram', href: '#', Icon: FaInstagram },
-  { label: 'LinkedIn', href: '#', Icon: FaLinkedinIn },
-  { label: 'YouTube', href: '#', Icon: FaYoutube },
+  { label: 'Facebook', href: 'https://www.facebook.com/share/1BzsftFe27/', Icon: FaFacebookF },
+  { label: 'Instagram', href: 'https://www.instagram.com/savemedhafoundation?igsh=MXE3c2pnYTBhbTZwcA==', Icon: FaInstagram },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/save-medha-foundation', Icon: FaLinkedinIn },
+  { label: 'YouTube', href: 'https://youtube.com/@savemedhafoundation7959?si=uX_ObNUfAkYo7vcw', Icon: FaYoutube },
 ];
 
 const Footer = () => {
