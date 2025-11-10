@@ -1,4 +1,4 @@
-﻿import React from "react";
+﻿import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import heroImage from "../assets/photo/13.png";
 import heroBackground from "../assets/photo/Rectangle 154.png";
@@ -8,12 +8,14 @@ import boosterImage from "../assets/photo/Rectangle 162.png";
 import handPic from "../assets/photo/Rectangle 151.png";
 
 const therapyTabs = [
-  { label: "NATURAL CURE", isActive: true },
-  { label: "NON CHEMICAL THERAPY", isActive: false },
-  { label: "FOOD BASED HEALING", isActive: false },
+  { label: "NATURAL CURE" },
+  { label: "NON CHEMICAL THERAPY" },
+  { label: "FOOD BASED HEALING" },
 ];
 
 const Home = () => {
+  const [activeTherapyTab, setActiveTherapyTab] = useState(therapyTabs[0].label);
+
   return (
     <div className="min-h-screen w-full bg-[#f4fbe7]">
       <section className="relative overflow-hidden bg-gradient-to-r from-[#0b5f10]/95 via-[#11841b]/82 to-[#6bca60]/55 text-white">
@@ -37,14 +39,14 @@ const Home = () => {
             </h1>
 
             <p className="mt-6 max-w-xl text-xl lg:text-2xl leading-snug text-white/90 font-lora">
-              Rebuilding the body's healing intelligence — naturally.
+              Rebuilding the body's healing intelligence naturally.
             </p>
 
             {/* --- Explore Button --- */}
             <div className="mt-10 flex flex-wrap items-center gap-6">
               <Link
                 to="/diseases"
-                className="inline-flex items-center gap-4 rounded-r-[32px] border border-white/20 bg-white px-8 py-3 text-base font-semibold uppercase tracking-[0.3em] text-green-700 shadow-[0_18px_36px_rgba(0,94,5,0.28)] transition hover:-translate-y-0.5 hover:bg-green-100 hover:text-green-900 font-montserrat"
+                className="inline-flex items-center gap-4 rounded-r-[32px] border border-white/20 bg-white px-8 py-3 text-base font-semibold uppercase tracking-[0.3em] text-green-700 shadow-[0_18px_36px_rgba(0,94,5,0.28)] transition hover:-translate-y-0.5 hover:bg-[#f8d547] hover:text-green-900 font-montserrat"
               >
                 <span>Explore</span>
                 <span className="inline-grid h-10 w-10 place-items-center rounded-full bg-green-700 text-white shadow-inner shadow-green-900/50">
@@ -69,19 +71,25 @@ const Home = () => {
             {/* --- Therapy Tabs --- */}
             <div className="mt-14 w-full max-w-xl rounded-tl-[16px] bg-white shadow-[0_24px_46px_rgba(0,94,5,0.28)] ring-1 ring-black/5">
               <div className="grid gap-2 rounded-[34px] bg-white px-4 py-4 text-center sm:grid-cols-3">
-                {therapyTabs.map((tab) => (
-                  <span
+                {therapyTabs.map((tab) => {
+                  const isActive = tab.label === activeTherapyTab;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTherapyTab(tab.label)}
+                      aria-pressed={isActive}
                     key={tab.label}
                     className={[
-                      "flex h-full items-center justify-center rounded-[26px] px-4 py-3 text-[0.76rem] font-medium uppercase tracking-[0.25em] font-montserrat",
-                      tab.isActive
+                      "flex h-full items-center justify-center rounded-[26px] px-4 py-3 text-[0.76rem] font-medium uppercase tracking-[0.25em] font-montserrat transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-600",
+                      isActive
                         ? "bg-gradient-to-r from-[#70dd67] to-[#006705] text-white shadow-lg shadow-green-600/40"
-                        : "text-slate-900",
+                        : "text-slate-900 hover:text-green-700",
                     ].join(" ")}
                   >
                     {tab.label}
-                  </span>
-                ))}
+                  </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -289,10 +297,10 @@ const Home = () => {
 
             <Link
               to="/diseases"
-              className="inline-flex items-center gap-3 rounded-lg bg-[#f8d547] px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#164c18] shadow-[0_16px_28px_rgba(146,108,5,0.25)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_32px_rgba(146,108,5,0.35)] font-montserrat"
+              className="inline-flex items-center gap-3 rounded-lg bg-[#f8d547] px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#164c18] shadow-[0_16px_28px_rgba(146,108,5,0.25)] transition hover:bg-[#0d8b1f] hover:text-[#fffdfd] hover:-translate-y-0.5 hover:shadow-[0_18px_32px_rgba(146,108,5,0.35)] font-montserrat"
             >
               EXPLORE
-              <span className="inline-grid h-8 w-8 place-items-center rounded-full bg-[#0d8b1f] text-white">
+              <span className="inline-grid h-8 w-8 place-items-center rounded-full bg-[#0d8b1f] hover:bg-[#f8d547] text-white">
                 <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M7.5 4.5 12.5 10 7.5 15.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>

@@ -1,10 +1,57 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 
+const N8N_WEBHOOK_URL = "https://kabir2512.app.n8n.cloud/webhook/e104cd65-b5fb-4e56-bff3-51d6a573e389/chat";
+
+const escapeHtml = (text = "") =>
+  text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const formatMessageContent = (text = "") => {
+  const normalized = text.replace(/\\n/g, "\n").trim();
+  return escapeHtml(normalized).replace(/(\r\n|\r|\n)/g, "<br/>");
+};
+
+const extractResponseText = (rawText = "") => {
+  const trimmed = rawText.trim();
+  if (!trimmed) return "";
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (typeof parsed === "string") {
+      return parsed;
+    }
+    if (parsed && typeof parsed === "object") {
+      if (typeof parsed.output === "string" && parsed.output.trim()) {
+        return parsed.output;
+      }
+      const fallbackValue = Object.values(parsed).find(
+        (value) => typeof value === "string" && value.trim()
+      );
+      if (fallbackValue) {
+        return fallbackValue;
+      }
+    }
+  } catch {
+    // Not JSON; fall through to return raw trimmed text.
+  }
+
+  return trimmed;
+};
+
 const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "👋 Hi! I’m your Natural Immunotherapy assistant. Ask me anything about your body, immunity, or recovery." },
+    {
+      role: "assistant",
+      content: formatMessageContent(
+        "👋 Hi! I’m your Natural Immunotherapy assistant. Ask me anything about your body, immunity, or recovery."
+      ),
+    },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -46,15 +93,14 @@ const AIChatBot = () => {
       return;
     }
 
-    const userMessage = { role: "user", content: trimmed };
+    const userMessage = { role: "user", content: formatMessageContent(trimmed) };
     const placeholderId = `assistant-${Date.now()}`;
-    const conversation = [...messages, userMessage];
-    const payload = { messages: conversation };
+    const payload = { chatInput: trimmed };
 
     setMessages((prev) => [
       ...prev,
       userMessage,
-      { role: "assistant", content: "Thinking…", id: placeholderId },
+      { role: "assistant", content: formatMessageContent("Thinking…"), id: placeholderId },
     ]);
     setInput("");
     setIsLoading(true);
@@ -65,40 +111,51 @@ const AIChatBot = () => {
     pendingRequestRef.current = controller;
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ chatInput: trimmed }),
         signal: controller.signal,
       });
+      const rawResponse = await res.text();
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(`Webhook responded with status ${res.status}`);
+      }
 
-      // ✅ Always provide fallback reply
-      const botReply =
-        data.reply?.trim() ||
-        "Your question seems health-related. Focus on detoxification, balanced vitamins, hydration, and proper cellular nutrition as part of Natural Immunotherapy.";
+      let botReply = extractResponseText(rawResponse);
+
+      if (!botReply) {
+        botReply = "The server sent an empty reply. Please try asking your question again.";
+      }
+
+      const formattedBotReply = formatMessageContent(botReply);
 
       setMessages((prev) =>
         prev.map((message) =>
           message.id === placeholderId
-            ? { ...message, content: botReply }
+            ? { ...message, content: formattedBotReply }
             : message
         )
       );
       console.info("AIChatBot request resolved", { payload, reply: botReply });
     } catch (error) {
       const wasAborted = error.name === "AbortError";
+      const isNetworkError = error instanceof TypeError;
       const fallbackContent = wasAborted
         ? "That request was cancelled. Ask again whenever you’re ready."
+        : isNetworkError
+        ? "I couldn’t reach the chat server. Please check your internet connection or allow access to the Natural Immunotherapy webhook, then ask again."
         : "It seems the server connection was interrupted. But here’s a Natural Immunotherapy tip: strengthen your immunity through detox, hydration, and balanced micronutrients.";
+
+      const fallbackHtml = formatMessageContent(fallbackContent);
 
       setMessages((prev) =>
         prev.map((message) =>
           message.id === placeholderId
             ? {
                 ...message,
-                content: fallbackContent,
+                content: fallbackHtml,
               }
             : message
         )
@@ -165,9 +222,8 @@ const AIChatBot = () => {
                       ? "bg-gradient-to-br from-[#1F8720] to-[#165F14] text-white border-[#186A17] shadow-lg"
                       : "bg-white text-slate-900 border-[#7BFE7A] shadow"
                   }`}
-                >
-                  {message.content}
-                </span>
+                  dangerouslySetInnerHTML={{ __html: message.content }}
+                />
               </div>
             ))}
           </div>
