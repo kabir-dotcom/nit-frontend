@@ -5,7 +5,7 @@ import nitLogoWhite from '../assets/photo/NIT white.png';
 
 const navItems = [
   { label: 'HOME', path: '/' },
-  { label: 'ABOUT US', path: '/about' },
+  { label: 'ABOUT NIT', path: '/about' },
   { label: 'OUR THERAPIES', path: '/diseases', caret: true },
   { label: 'WHY CHOOSE NIT', path: '/boosters' },
   { label: 'PAGE', path: '/blog', caret: true },
