@@ -1,11 +1,17 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
+import ThreePillars from "../components/ThreePillars";
+import PatientStories from "../components/PatientStories";
+
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import heroImage from "../assets/photo/13.png";
 import heroBackground from "../assets/photo/Rectangle 154.png";
 import missionImage from "../assets/photo/Rectangle 153.png";
 import beliefSecondaryImage from "../assets/photo/Rectangle 158.png";
 import boosterImage from "../assets/photo/Rectangle 162.png";
-import handPic from "../assets/photo/Rectangle 151.png";
+import sectionVideo from "../assets/photo/demo.mp4";
+import sectionBg from "../assets/photo/bg.png";
+import HowNITWorks from "../components/HowNITWorks";
 
 const therapyTabs = [
   { label: "NATURAL CURE" },
@@ -93,6 +99,7 @@ const Home = () => {
               </div>
             </div>
           </div>
+          
 
           {/* ---------- RIGHT SIDE: Image ---------- */}
           <div className="flex-1 flex justify-center lg:justify-end">
@@ -117,12 +124,16 @@ const Home = () => {
                 <span className="h-1 w-7 rounded-full bg-[#0f8f28]" />
                 <span className="h-1 w-5 rounded-full bg-[#0f8f28]" />
               </div>
-              <img
-                src={handPic}
-                alt="Hands nurturing seedlings"
+              <video
                 className="h-full w-full object-cover"
-                loading="lazy"
-              />
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster="/src/assets/photo/Rectangle 151.png"
+              >
+                <source src={sectionVideo} type="video/mp4" />
+              </video>
             </div>
             <div className="space-y-6 text-primary-900">
               <div className="flex items-start gap-4">
@@ -130,7 +141,7 @@ const Home = () => {
                   <span className="text-[#0d7f1f]">Healing Beyond Medicine</span>
                   <span className="text-[#17371e]">
                     {" "}
-                    — Uniting Nature's Intelligence with Scientific Understanding.
+                    Uniting Nature's Intelligence with Scientific Understanding.
                   </span>
                 </h2>
                 <span className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0d8b1f] text-white shadow-[0_10px_18px_rgba(15,121,39,0.3)]">
@@ -153,7 +164,7 @@ const Home = () => {
                 </p>
                 <p>
                   At Natural Immunotherapy (NIT), we bring hope where conventional medicine gives up. Our therapies
-                  rebuild the body's natural healing intelligence to cure critical diseases — without chemotherapy,
+                  rebuild the body's natural healing intelligence to cure critical diseases without chemotherapy,
                   surgery, or radiation.
                 </p>
                 <p>
@@ -171,6 +182,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+       <>
+      <ThreePillars/>
+     </>
 
       <section className="bg-[#f7ffe8] py-20">
         <div className="mx-auto max-w-[1180px] px-6 lg:px-10">
@@ -189,17 +203,17 @@ const Home = () => {
                 </span>
                 <h3 className="text-3xl font-semibold leading-snug text-[#0f3f19] sm:text-[2.2rem] font-montserrat">
                   <span className="text-[#0d7f1f]">We Believe Every Body Can Heal Itself</span>
-                  <span className="text-[#17361d]">{' '}&mdash; If Guided Right.</span>
+                  <span className="text-[#17361d]">{' '} If Guided Right.</span>
                 </h3>
               </div>
               <div className="space-y-5 text-lg leading-8 text-[#22432a] font-lora">
                 <p>
-                  Your body is not broken &mdash; it is intelligent. At Natural Immunotherapy, we reactivate that intelligence
+                  Your body is not broken  it is intelligent. At Natural Immunotherapy, we reactivate that intelligence
                   through nutrients, not chemicals. Our process focuses on restoring cellular balance and awakening
                   natural immunity to fight disease from within.
                 </p>
                 <p>
-                  We treat not just symptoms, but the cause &mdash; giving patients a new life, naturally.
+                  We treat not just symptoms, but the cause  giving patients a new life, naturally.
                 </p>
               </div>
             </div>
@@ -231,8 +245,11 @@ const Home = () => {
           </div>
         </div>
       </section>
+        <>
+        <HowNITWorks/>
+      </>
 
-      <section className="bg-[#f7f9f4] py-20">
+      <section className="bg-[#f2ffe3] py-20">
         <div className="mx-auto flex max-w-[1180px] flex-col gap-16 px-6 lg:flex-row lg:items-center lg:gap-12 lg:px-10">
           <div className="relative flex-1 overflow-hidden rounded-[36px] bg-white shadow-[0_24px_52px_rgba(44,85,58,0.2)]">
             <img
@@ -260,7 +277,7 @@ const Home = () => {
                   </svg>
                 </span>
                 <span>
-                  <strong>100% Non-Conventional</strong> &mdash; No chemotherapy, no radiation, no surgery.
+                  <strong>100% Non-Conventional</strong>  No chemotherapy, no radiation, no surgery.
                 </span>
               </li>
               <li className="flex gap-4">
@@ -290,13 +307,15 @@ const Home = () => {
                   </svg>
                 </span>
                 <span>
-                  <strong>The Future of Healing</strong> &mdash; backed by biological intelligence, not chemicals.
+                  <strong>The Future of Healing</strong>  backed by biological intelligence, not chemicals.
                 </span>
               </li>
             </ul>
 
-            <Link
-              to="/diseases"
+            <a
+              href="https://dantura.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-3 rounded-lg bg-[#f8d547] px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#164c18] shadow-[0_16px_28px_rgba(146,108,5,0.25)] transition hover:bg-[#0d8b1f] hover:text-[#fffdfd] hover:-translate-y-0.5 hover:shadow-[0_18px_32px_rgba(146,108,5,0.35)] font-montserrat"
             >
               EXPLORE
@@ -305,7 +324,7 @@ const Home = () => {
                   <path d="M7.5 4.5 12.5 10 7.5 15.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -315,7 +334,7 @@ const Home = () => {
           <div className="flex flex-col items-center gap-10 px-8 py-12 text-center text-white lg:flex-row lg:items-center lg:justify-between lg:text-left">
             <div className="max-w-[520px] space-y-4 font-lora text-lg leading-9">
               <p className="text-2xl font-semibold text-white/95">
-                &ldquo;We don't treat diseases &mdash; we restore life.&rdquo;
+                “We don't treat diseases  we restore life.”
               </p>
               <p className="text-white/85">
                 Book a free health assessment and begin your natural recovery plan. Our specialists listen, map your immune terrain, and craft nutrient-driven protocols customized to your journey.
@@ -339,6 +358,43 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+     
+
+    
+
+    
+      <PatientStories />
+      <div>
+        <section className="relative text-white text-center py-16 overflow-hidden">
+          <img
+            src={sectionBg}
+            alt="Herbal background"
+            className="absolute inset-0 h-full w-full object-cover opacity-80"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-[#006705]/25" />
+          <div className="relative z-10 px-4">
+            <h2 className="text-4xl font-bold font-koho mb-4">
+              Discover the Science of Natural Immunotherapy
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg mb-8">
+              Learn how Cellular Intelligence, Micronutrients, and Detoxification work together to heal your body naturally.
+            </p>
+            <button
+              onClick={() => window.open("https://dantura.com", "_blank")}
+              className="inline-flex items-center gap-3 rounded-lg bg-[#f8d547] px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#164c18] shadow-[0_16px_28px_rgba(146,108,5,0.25)] transition hover:bg-[#0d8b1f] hover:text-[#fffdfd] hover:-translate-y-0.5 hover:shadow-[0_18px_32px_rgba(146,108,5,0.35)] font-montserrat"
+            >
+              Explore How NIT Works
+              <span className="inline-grid h-8 w-8 place-items-center rounded-full bg-[#0d8b1f] hover:bg-[#f8d547] text-white">
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M7.5 4.5 12.5 10 7.5 15.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };

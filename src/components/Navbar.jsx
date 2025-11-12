@@ -37,8 +37,8 @@ const Navbar = () => {
   );
 
   return (
-    <header className="sticky top-0 z-50 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between border-b border-[#0d7120] px-5 py-4 sm:px-12 lg:px-10">
+    <header className="sticky top-0 z-50  bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between border-b border-[#0d7120] px-5 py-4 sm:px-12 lg:px-10 gap-3">
         <Link to="/" className="flex items-center">
           <img
             src={nitLogoGreen}
@@ -51,7 +51,7 @@ const Navbar = () => {
           />
         </Link>
 
-        <nav className="hidden items-center gap-12 pl-4 font-inter md:flex">
+        <nav className="hidden items-center gap-8 pl-4 font-inter md:flex">
           {navItems.map(item => (
             <NavLink
               key={item.path}
@@ -70,7 +70,7 @@ const Navbar = () => {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-5 pl-6 md:flex">
+        <div className="hidden items-center gap-7 pl-6 md:flex">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#0a7c1b] text-white shadow-[0_8px_16px_rgba(12,99,24,0.28)]">
             <svg
               className="h-5 w-5"
