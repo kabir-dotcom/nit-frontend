@@ -30,9 +30,7 @@ const Home = () => {
         <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col-reverse gap-8 px-6 py-16 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           {/* ---------- LEFT SIDE: Text ---------- */}
           <div className="flex-1 text-left">
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-white/85">
-              Rebuilding the Body's Healing Intelligence
-            </p>
+            
 
             <h1 className="mt-4 text-[3.2rem] lg:text-[4.2rem] font-limelight leading-tight font-normal text-white">
               Natural Immunotherapy
