@@ -1,62 +1,74 @@
-import { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useMemo } from 'react';
 
-const truncateToNearestWord = (text = '', limit = 250) => {
-  if (text.length <= limit) {
-    return text;
-  }
-
-  const slice = text.slice(0, limit);
-  const breakpoint = Math.max(slice.lastIndexOf(' '), slice.lastIndexOf('\n'));
-  const safeSlice = breakpoint > 0 ? slice.slice(0, breakpoint) : slice;
-
-  return `${safeSlice.trimEnd()}...`;
+const lineIsFaq = (line) => /^\d+\.\s+/.test(line);
+const lineIsBullet = (line) => line.startsWith('- ');
+const lineIsSubHeading = (line, title) => {
+  if (!line) return false;
+  if (line === title) return false;
+  if (lineIsFaq(line) || lineIsBullet(line)) return false;
+  if (line.length >= 60) return false;
+  return /^[A-Z]/.test(line);
 };
 
-const BlogCard = ({ title, author, date, excerpt = '', coverImage }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const BlogCard = ({ title, excerpt = '' }) => {
+  const sections = useMemo(() => {
+    return excerpt
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line, index) => {
+        if (lineIsSubHeading(line, title)) {
+          return (
+            <h3 key={`subheading-${index}`} className="text-xl font-semibold text-green-700 mt-6">
+              {line}
+            </h3>
+          );
+        }
 
-  const preview = useMemo(() => truncateToNearestWord(excerpt), [excerpt]);
-  const showToggle = excerpt && excerpt.length > preview.length;
-  const content = isExpanded ? excerpt : preview;
+        if (lineIsFaq(line)) {
+          return (
+            <p key={`faq-${index}`} className="italic font-medium text-slate-700 mt-3">
+              {line}
+            </p>
+          );
+        }
+
+        if (lineIsBullet(line)) {
+          return (
+            <p
+              key={`bullet-${index}`}
+              className="ml-4 text-slate-600 leading-relaxed before:content-['•'] before:mr-2"
+            >
+              {line.slice(2).trim()}
+            </p>
+          );
+        }
+
+        return (
+          <p key={`paragraph-${index}`} className="text-slate-600 leading-relaxed">
+            {line}
+          </p>
+        );
+      });
+  }, [excerpt, title]);
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition-shadow duration-200 hover:shadow-md">
-      {coverImage && (
-        <img
-          src={coverImage}
-          alt={title}
-          className="h-48 w-full rounded-t-2xl object-cover"
-        />
-      )}
-
-      <div className="flex flex-1 flex-col px-6 py-5">
-        <header className="mb-4">
-          <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
-          {(author || date) && (
-            <p className="mt-1 text-sm text-slate-500">
-              {author && <span>By {author}</span>}
-              {author && date && <span className="mx-2">/</span>}
-              {date && <span>{date}</span>}
-            </p>
-          )}
-        </header>
-
-        <p className="whitespace-pre-line text-sm text-slate-600 transition-all duration-200 ease-in-out">
-          {content}
-        </p>
-
-        {showToggle && (
-          <button
-            type="button"
-            onClick={() => setIsExpanded(prev => !prev)}
-            className="mt-4 w-fit text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 focus:outline-none focus-visible:ring focus-visible:ring-blue-300"
-          >
-            {isExpanded ? 'Read Less' : 'Read More'}
-          </button>
-        )}
-      </div>
-    </article>
+    <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition hover:shadow-lg">
+      <h2
+        className="text-3xl font-bold text-[#0ba112] mb-6 sm:text-4xl"
+        style={{ fontFamily: 'KoHo, sans-serif' }}
+      >
+        {title}
+      </h2>
+      <article>{sections}</article>
+    </div>
   );
+};
+
+BlogCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  excerpt: PropTypes.string,
 };
 
 export default BlogCard;

@@ -90,7 +90,7 @@ const PatientStories = () => {
   const closeModal = () => setOpenVideo(null);
 
   return (
-    <section className="relative w-full py-16 bg-[#f0ffe8] text-center">
+    <section id="patient-stories" className="relative w-full py-16 bg-[#f0ffe8] text-center">
       <div className="flex justify-center mb-10">
         <h2 className="inline-flex rounded-full bg-gradient-to-r from-[#0a6f1b] via-[#4ab33e] to-[#0a6f1b] px-16 py-3 text-lg md:text-xl font-semibold uppercase tracking-[0.18em] font-montserrat text-white shadow-[0_16px_32px_rgba(20,110,33,0.35)]">
           PATIENT SUCCESS STORY
