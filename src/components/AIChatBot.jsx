@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 
-const N8N_WEBHOOK_URL = "https://kabir2512.app.n8n.cloud/webhook/8c602cb2-b41f-4b82-a94b-3b90998a6dbc/chat";
+const N8N_WEBHOOK_URL = "https://minta2512.app.n8n.cloud/webhook/dantura-multi-analyzer";
 
 const escapeHtml = (text = "") =>
   text
