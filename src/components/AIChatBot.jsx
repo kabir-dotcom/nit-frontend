@@ -43,6 +43,90 @@ const extractResponseText = (rawText = "") => {
   return trimmed;
 };
 
+const parseBoosterPayload = (rawText = "") => {
+  const trimmed = rawText.trim();
+  if (!trimmed) return null;
+
+  let jsonCandidate = "";
+  let cleanedText = trimmed;
+
+  // Prefer explicit ```json blocks
+  const codeBlockMatch = trimmed.match(/```json\s*([\s\S]*?)```/i);
+  if (codeBlockMatch) {
+    jsonCandidate = codeBlockMatch[1];
+    cleanedText = `${trimmed.slice(0, codeBlockMatch.index)}${trimmed.slice(
+      codeBlockMatch.index + codeBlockMatch[0].length
+    )}`.trim();
+  } else {
+    // Fallback: locate first/last brace to carve out JSON
+    const firstBrace = trimmed.indexOf("{");
+    const lastBrace = trimmed.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      jsonCandidate = trimmed.slice(firstBrace, lastBrace + 1);
+      cleanedText = `${trimmed.slice(0, firstBrace)}${trimmed.slice(lastBrace + 1)}`.trim();
+    }
+  }
+
+  if (!jsonCandidate) return null;
+
+  try {
+    const parsed = JSON.parse(jsonCandidate);
+    const boosters = Array.isArray(parsed?.boosters)
+      ? parsed.boosters
+      : Array.isArray(parsed)
+      ? parsed
+      : [];
+
+    if (!boosters.length) return null;
+
+    const normalizedBoosters = boosters
+      .map((booster, index) => ({
+        name:
+          typeof booster?.name === "string" && booster.name.trim()
+            ? booster.name.trim()
+            : `Booster ${index + 1}`,
+        strength_mg:
+          Number.isFinite(booster?.strength_mg) || typeof booster?.strength_mg === "string"
+            ? booster.strength_mg
+            : null,
+        capsules:
+          Number.isFinite(booster?.capsules) || typeof booster?.capsules === "string"
+            ? booster.capsules
+            : null,
+        sale_price_inr:
+          Number.isFinite(booster?.sale_price_inr) || typeof booster?.sale_price_inr === "string"
+            ? booster.sale_price_inr
+            : null,
+        product_url: typeof booster?.product_url === "string" ? booster.product_url : "",
+        image_key: typeof booster?.image_key === "string" ? booster.image_key : "",
+        reason: typeof booster?.reason === "string" ? booster.reason : "",
+      }))
+      .filter((booster) => booster.name);
+
+    if (!normalizedBoosters.length) return null;
+
+    const fallbackLead =
+      (typeof parsed?.message === "string" && parsed.message.trim()) ||
+      (typeof parsed?.output === "string" && parsed.output.trim()) ||
+      "";
+
+    const leadText = cleanedText || fallbackLead;
+
+    return { boosters: normalizedBoosters, leadText };
+  } catch {
+    return null;
+  }
+};
+
+const formatInr = (value) => {
+  if (value === null || value === undefined || value === "") return "";
+  const numericValue = Number(value);
+  if (!Number.isNaN(numericValue)) {
+    return `₹${numericValue.toLocaleString("en-IN")}`;
+  }
+  return `₹${value}`;
+};
+
 const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -203,7 +287,12 @@ const AIChatBot = () => {
         throw new Error(`Webhook responded with status ${res.status}`);
       }
 
-      let botReply = extractResponseText(rawResponse);
+      const boosterPayload = parseBoosterPayload(rawResponse);
+      let boostersForDisplay = boosterPayload?.boosters || null;
+      let botReply = boosterPayload
+        ? boosterPayload.leadText ||
+          "Here are the boosters I recommend based on your details:"
+        : extractResponseText(rawResponse);
 
       if (!botReply) {
         botReply = "The server sent an empty reply. Please try asking your question again.";
@@ -214,7 +303,7 @@ const AIChatBot = () => {
       setMessages((prev) =>
         prev.map((message) =>
           message.id === placeholderId
-            ? { ...message, content: formattedBotReply }
+            ? { ...message, content: formattedBotReply, boosters: boostersForDisplay || undefined }
             : message
         )
       );
@@ -236,6 +325,7 @@ const AIChatBot = () => {
             ? {
                 ...message,
                 content: fallbackHtml,
+                boosters: undefined,
               }
             : message
         )
@@ -305,6 +395,59 @@ const AIChatBot = () => {
                 >
                   {message.content ? (
                     <div dangerouslySetInnerHTML={{ __html: message.content }} />
+                  ) : null}
+                  {message.boosters?.length ? (
+                    <div className={`${message.content ? "mt-3" : ""} space-y-3`}>
+                      {message.boosters.map((booster, boosterIndex) => (
+                        <div
+                          key={`${booster.name}-${boosterIndex}`}
+                          className="rounded-2xl border border-[#7BFE7A] bg-white px-3 py-3 text-slate-900 shadow-sm"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-[#165F14]">{booster.name}</p>
+                              {booster.reason ? (
+                                <p className="mt-1 text-xs leading-snug text-slate-600">
+                                  {booster.reason}
+                                </p>
+                              ) : null}
+                            </div>
+                            {booster.product_url ? (
+                              <a
+                                href={booster.product_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs font-semibold text-[#165F14] underline decoration-[#7BFE7A] underline-offset-2"
+                              >
+                                View
+                              </a>
+                            ) : null}
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700">
+                            {booster.strength_mg ? (
+                              <div className="rounded-xl bg-[#F2FFE2] px-2 py-1 font-semibold text-[#165F14]">
+                                {booster.strength_mg} mg strength
+                              </div>
+                            ) : null}
+                            {booster.capsules ? (
+                              <div className="rounded-xl bg-[#F2FFE2] px-2 py-1 font-semibold text-[#165F14]">
+                                {booster.capsules} capsules
+                              </div>
+                            ) : null}
+                            {booster.sale_price_inr ? (
+                              <div className="rounded-xl bg-[#F2FFE2] px-2 py-1 font-semibold text-[#165F14]">
+                                {formatInr(booster.sale_price_inr)}
+                              </div>
+                            ) : null}
+                            {booster.image_key ? (
+                              <div className="rounded-xl bg-[#F2FFE2] px-2 py-1 text-[0.7rem] text-slate-600">
+                                Code: {booster.image_key}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : null}
                   {message.attachments?.length ? (
                     <div className={`${message.content ? "mt-2" : ""} space-y-2`}>
